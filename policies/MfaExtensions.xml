@@ -214,9 +214,6 @@
             <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:IPificationOidcClientIdKeyContainer}" />
             <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:IPificationOidcClientSecretKeyContainer}" />
           </CryptographicKeys>
-          <InputClaimsTransformations>
-            <InputClaimsTransformation ReferenceId="GetIPificationMsisdn" />
-          </InputClaimsTransformations>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="ipification_request_jwt_audience" PartnerClaimType="aud" DefaultValue="{Settings:IPificationRequestTokenAudience}" />
             <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="msisdn" />

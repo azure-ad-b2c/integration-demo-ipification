@@ -7,8 +7,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: b2c-ipification-demo
-  AZURE_WEBAPP_PROJECT_PATH: './src/B2C.IPificationDemo.csproj'
-  AZURE_WEBAPP_OUTPUT_PATH: './output'
+  AZURE_WEBAPP_SOURCE: './src'
   DOTNET_VERSION: '2.2.402'
   DEMO_APP_CLIENT_ID: 01622107-38b3-4a2c-9701-526641cdfdcf
 
@@ -36,12 +35,12 @@ jobs:
     
     - name: dotnet build and publish
       run: |
-        dotnet build '${{ env.AZURE_WEBAPP_PROJECT_PATH }}' --configuration Release
-        dotnet publish '${{ env.AZURE_WEBAPP_PROJECT_PATH }}' -c Release -o '${{ env.AZURE_WEBAPP_OUTPUT_PATH }}' 
+        dotnet build '${{ env.AZURE_WEBAPP_SOURCE }}' --configuration Release
+        dotnet publish '${{ env.AZURE_WEBAPP_SOURCE }}' -c Release -o 'output' 
         
     - name: 'Run Azure webapp deploy action using publish profile credentials'
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }}
-        package: '${{ env.AZURE_WEBAPP_OUTPUT_PATH }}'
+        package: '${{ env.AZURE_WEBAPP_SOURCE }}/output'
