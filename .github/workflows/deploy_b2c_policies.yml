@@ -53,7 +53,7 @@ jobs:
       with:
         tokenPrefix: "{Settings:"
         tokenSuffix: "}"
-        files: "B2C Policies/*.xml"
+        files: "policies/*.xml"
       env:
         Production: ${{ steps.parse_appsettings.outputs.Production }}
         Tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
