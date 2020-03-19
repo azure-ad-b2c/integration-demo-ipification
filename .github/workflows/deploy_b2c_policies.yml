@@ -1,0 +1,150 @@
+name: Deploy Azure AD B2C Policies and Configuration
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  B2C_SERVICE_PRINCIPAL_CLIENT_ID: "59e4f9d8-8f1d-4c3a-8fb9-694f8663b0f6"
+
+jobs:
+  build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Read appsettings.json
+      id: get_appsettings
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: ./policies/appsettings.json
+    - name: Get policy settings from appsettings.json
+      id: parse_appsettings
+      uses: gr2m/get-json-paths-action@v1.x
+      with:
+        json: ${{ steps.get_appsettings.outputs.content }}
+        Production: "Environments[0].Production"
+        Tenant: "Environments[0].Tenant"
+        PolicyPrefix: "Environments[0].PolicySettings.PolicyPrefix"
+        DeploymentMode: "Environments[0].PolicySettings.DeploymentMode"
+        DeveloperMode: "Environments[0].PolicySettings.DeveloperMode"
+        AppInsightsInstrumentationKey: "Environments[0].PolicySettings.AppInsightsInstrumentationKey"
+        IdentityExperienceFrameworkAppId: "Environments[0].PolicySettings.IdentityExperienceFrameworkAppId"
+        ProxyIdentityExperienceFrameworkAppId: "Environments[0].PolicySettings.ProxyIdentityExperienceFrameworkAppId"
+        IPificationDisplayName: "Environments[0].PolicySettings.IPificationDisplayName"
+        IPificationDescription: "Environments[0].PolicySettings.IPificationDescription"
+        IPificationOidcMetadataUrl: "Environments[0].PolicySettings.IPificationOidcMetadataUrl"
+        IPificationOidcClientId: "Environments[0].PolicySettings.IPificationOidcClientId"
+        IPificationOidcClientIdKeyContainer: "Environments[0].PolicySettings.IPificationOidcClientIdKeyContainer"
+        IPificationOidcClientSecretKeyContainer: "Environments[0].PolicySettings.IPificationOidcClientSecretKeyContainer"
+        IPificationTokenEndpoint: "Environments[0].PolicySettings.IPificationTokenEndpoint"
+        IPificationRequestTokenAudience: "Environments[0].PolicySettings.IPificationRequestTokenAudience"
+        IPificationApiGetCoverageEndpoint: "Environments[0].PolicySettings.IPificationApiGetCoverageEndpoint"
+        IPificationApiGetRequestJwtEndpoint: "Environments[0].PolicySettings.IPificationApiGetRequestJwtEndpoint"
+
+    - name: Replace tokens in B2C policies
+      uses: cschleiden/replace-tokens@v1.0
+      with:
+        tokenPrefix: "{Settings:"
+        tokenSuffix: "}"
+        files: "B2C Policies/*.xml"
+      env:
+        Production: ${{ steps.parse_appsettings.outputs.Production }}
+        Tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        PolicyPrefix: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}
+        DeploymentMode: ${{ steps.parse_appsettings.outputs.DeploymentMode }}
+        DeveloperMode: ${{ steps.parse_appsettings.outputs.DeveloperMode }}
+        AppInsightsInstrumentationKey: ${{ steps.parse_appsettings.outputs.AppInsightsInstrumentationKey }}
+        IdentityExperienceFrameworkAppId: ${{ steps.parse_appsettings.outputs.IdentityExperienceFrameworkAppId }}
+        ProxyIdentityExperienceFrameworkAppId: ${{ steps.parse_appsettings.outputs.ProxyIdentityExperienceFrameworkAppId }}
+        FacebookClientId: ${{ steps.parse_appsettings.outputs.FacebookClientId }}
+        FacebookClientSecretKeyContainer: ${{ steps.parse_appsettings.outputs.FacebookClientSecretKeyContainer }}
+        IPificationDisplayName: ${{ steps.parse_appsettings.outputs.IPificationDisplayName }}
+        IPificationDescription: ${{ steps.parse_appsettings.outputs.IPificationDescription }}
+        IPificationOidcMetadataUrl: ${{ steps.parse_appsettings.outputs.IPificationOidcMetadataUrl }}
+        IPificationOidcClientId: ${{ steps.parse_appsettings.outputs.IPificationOidcClientId }}
+        IPificationOidcClientIdKeyContainer: ${{ steps.parse_appsettings.outputs.IPificationOidcClientIdKeyContainer }}
+        IPificationOidcClientSecretKeyContainer: ${{ steps.parse_appsettings.outputs.IPificationOidcClientSecretKeyContainer }}
+        IPificationTokenEndpoint: ${{ steps.parse_appsettings.outputs.IPificationTokenEndpoint }}
+        IPificationRequestTokenAudience: ${{ steps.parse_appsettings.outputs.IPificationRequestTokenAudience }}
+        IPificationApiGetCoverageEndpoint: ${{ steps.parse_appsettings.outputs.IPificationApiGetCoverageEndpoint }}
+        IPificationApiGetRequestJwtEndpoint: ${{ steps.parse_appsettings.outputs.IPificationApiGetRequestJwtEndpoint }}
+        
+    - name: Upload Facebook Client Secret
+      uses: azure-ad-b2c/deploy-trustframework-keyset-secret@v1
+      with:
+        name: ${{ steps.parse_appsettings.outputs.FacebookClientSecretKeyContainer }}
+        value: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload IPification Client ID as secret
+      uses: azure-ad-b2c/deploy-trustframework-keyset-secret@v1
+      with:
+        name: ${{ steps.parse_appsettings.outputs.IPificationOidcClientIdKeyContainer }}
+        value: ${{ secrets.IPIFICATION_OIDC_CLIENT_ID }}
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload IPification Client Secret
+      uses: azure-ad-b2c/deploy-trustframework-keyset-secret@v1
+      with:
+        name: ${{ steps.parse_appsettings.outputs.IPificationOidcClientSecretKeyContainer }}
+        value: ${{ secrets.IPIFICATION_OIDC_CLIENT_SECRET }}
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+
+    - name: Upload MfaBase Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/MfaBase.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}mfa_base
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload MfaExtensions Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/MfaExtensions.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}mfa_extensions
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload MfaSignUpOrSignin Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/MfaSignUpOrSignin.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}mfa_signup_signin
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+
+    - name: Upload PhoneBase Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/PhoneBase.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}phone_base
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload PhoneExtensions Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/PhoneExtensions.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}phone_extensions
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
+    - name: Upload PhoneSignUpOrSignin Policy
+      uses: azure-ad-b2c/deploy-trustframework-policy@v1
+      with:
+        file: "policies/PhoneSignUpOrSignin.xml"
+        policy: ${{ steps.parse_appsettings.outputs.PolicyPrefix }}phonebased_signup_signin
+        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
+        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
+        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
