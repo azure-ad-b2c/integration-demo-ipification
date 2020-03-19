@@ -35,6 +35,8 @@ jobs:
         AppInsightsInstrumentationKey: "Environments[0].PolicySettings.AppInsightsInstrumentationKey"
         IdentityExperienceFrameworkAppId: "Environments[0].PolicySettings.IdentityExperienceFrameworkAppId"
         ProxyIdentityExperienceFrameworkAppId: "Environments[0].PolicySettings.ProxyIdentityExperienceFrameworkAppId"
+        FacebookClientId: "Environments[0].PolicySettings.FacebookClientId"
+        FacebookClientSecretKeyContainer: "Environments[0].PolicySettings.FacebookClientSecretKeyContainer"
         IPificationDisplayName: "Environments[0].PolicySettings.IPificationDisplayName"
         IPificationDescription: "Environments[0].PolicySettings.IPificationDescription"
         IPificationOidcMetadataUrl: "Environments[0].PolicySettings.IPificationOidcMetadataUrl"

@@ -1,4 +1,4 @@
-name: Deploy DotNet project to Azure Function App
+name: Deploy DotNet project to Azure Web App
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: b2c-ipification-demo
-  AZURE_WEBAPP_PACKAGE_PATH: './src'
+  AZURE_WEBAPP_SOURCE_PATH: 'src/'
   DOTNET_VERSION: '2.2.402'
   DEMO_APP_CLIENT_ID: 01622107-38b3-4a2c-9701-526641cdfdcf
 
@@ -35,12 +35,12 @@ jobs:
     
     - name: dotnet build and publish
       run: |
-        dotnet build --configuration Release
-        dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/output' 
+        dotnet build '${{ env.AZURE_WEBAPP_SOURCE_PATH }}' --configuration Release
+        dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_SOURCE_PATH }}/output' 
         
     - name: 'Run Azure webapp deploy action using publish profile credentials'
       uses: azure/webapps-deploy@v2
       with: 
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE  }}
-        package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/output'
+        package: '${{ env.AZURE_WEBAPP_SOURCE_PATH }}/output'
