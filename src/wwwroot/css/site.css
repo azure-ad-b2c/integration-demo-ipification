@@ -1,0 +1,27 @@
+﻿.masthead {
+  background: linear-gradient(to bottom,rgba(233,233,233,.6) 0,rgba(233,233,233,.9) 75%,rgb(233,233,233) 100%), url("../img/contoso-bg.jpeg") !important;
+  background-size: cover, cover !important;
+}
+
+.masthead h1 {
+  font-size: 2.5rem !important;
+  line-height: 2.5rem !important;
+  color: rgba(22,22,22);
+  background: -webkit-linear-gradient(rgba(22,22,22, .9), rgba(22,22,22, 0.2));
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.logo-image {
+  max-width: 400px;
+  margin-bottom: 1rem;
+}
+
+p {
+  color: rgb(22,22,22);
+}
+
+.btn-sm {
+  padding: .5rem .75rem;
+  font-size: 70%;
+}

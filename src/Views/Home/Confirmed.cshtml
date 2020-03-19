@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Waitlist Enrollment";
+}
+
+<img class="logo-image" src="~/img/contoso-logo-hero.png" alt="Contoso Adventures" />
+<h1 class="mx-auto my-0 text-uppercase">Waitlist Confirmed</h1>
+<p class="mx-auto mt-2">Your account is setup and we have confirmed your spot on the Contoso Adventures waitlist.</p>
+
+<h4 class="mt-2">We have you on the list as:</h4>
+<p class="mx-auto mb-4">
+    @ViewData["GivenName"] @ViewData["Surname"]    
+</p>
+
+<p class="mb-5">
+    <a class="btn btn-secondary btn-sm" asp-controller="Home" asp-action="SignOut">Sign Out</a>
+</p>
+
+<h5>All claims:</h5>
+<pre style="max-width:50rem;overflow-x:scroll"><code>@foreach (System.Security.Claims.Claim claim in (ViewData["Claims"] as IEnumerable<System.Security.Claims.Claim> ))
+    {
+        <text>@claim.Type: @claim.Value<br /></text>
+    }</code></pre>
