@@ -4,9 +4,13 @@
 
 <img class="logo-image" src="~/img/contoso-logo-hero.png" alt="Contoso Adventures" />
 <h1 class="mx-auto my-0 text-uppercase">Coming soon&hellip;</h1>
-<p class="mx-auto mt-2 mb-5">You can sign-up for an account to join our waitlist. You'll be the first to find out about our exciting lineup of adventure products.</p>
+<p class="mx-auto mt-2 mb-4">You can sign-up for an account to join our waitlist. You'll be the first to find out about our exciting lineup of adventure products.</p>
 @* <a class="btn btn-secondary" asp-controller="Home" asp-action="LoginMfa">Create your account (with MFA) &raquo;</a>
 <a class="btn btn-secondary" asp-controller="Home" asp-action="LoginPasswordless">Create your account (Passwordless) &raquo;</a> *@
 
-<a class="btn btn-secondary" asp-controller="Home" asp-action="SignIn" asp-route-policy="b2c_1a_ipification_mfa_signup_signin">Create your account (with MFA) &raquo;</a>
-<a class="btn btn-secondary" asp-controller="Home" asp-action="SignIn" asp-route-policy="b2c_1a_ipification_phonebased_signup_signin">Create your account (Passwordless) &raquo;</a>
+<a class="btn btn-secondary mt-1"asp-controller="Home" asp-action="SignIn" asp-route-policy="b2c_1a_ipification_mfa_signup_signin">
+    Email/social sign-in &raquo;
+</a>
+<a class="btn btn-secondary mt-1" asp-controller="Home" asp-action="SignIn" asp-route-policy="b2c_1a_ipification_phonebased_signup_signin">
+    Phone number sign-in &raquo;
+</a>

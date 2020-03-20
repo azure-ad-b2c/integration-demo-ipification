@@ -16,7 +16,7 @@
 </p>
 
 <h5>All claims:</h5>
-<pre style="max-width:50rem;overflow-x:scroll"><code>@foreach (System.Security.Claims.Claim claim in (ViewData["Claims"] as IEnumerable<System.Security.Claims.Claim> ))
+<pre><code>@foreach (System.Security.Claims.Claim claim in (ViewData["Claims"] as IEnumerable<System.Security.Claims.Claim> ))
     {
         <text>@claim.Type: @claim.Value<br /></text>
     }</code></pre>
