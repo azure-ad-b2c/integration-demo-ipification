@@ -64,6 +64,18 @@
           <OutputClaim ClaimTypeReferenceId="ipification_msisdn" TransformationClaimType="phoneNumberString" />
         </OutputClaims>
       </ClaimsTransformation>
+      <ClaimsTransformation Id="RemovePlusFromIPificationMsisdn" TransformationMethod="StringReplace">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="ipification_msisdn" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="oldValue" DataType="string" Value="+" />
+          <InputParameter Id="newValue" DataType="string" Value="" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="ipification_msisdn" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
     </ClaimsTransformations>
   </BuildingBlocks>
 
@@ -225,6 +237,7 @@
           </CryptographicKeys>
           <InputClaimsTransformations>
             <InputClaimsTransformation ReferenceId="GetIPificationMsisdn" />
+            <InputClaimsTransformation ReferenceId="RemovePlusFromIPificationMsisdn" />
           </InputClaimsTransformations>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="ipification_request_jwt_audience" PartnerClaimType="aud" DefaultValue="{Settings:IPificationRequestTokenAudience}" />

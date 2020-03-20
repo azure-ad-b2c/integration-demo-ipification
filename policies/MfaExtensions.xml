@@ -41,6 +41,9 @@
       <ClaimType Id="ipification_api_request_jwt">
         <DataType>string</DataType>
       </ClaimType>
+      <ClaimType Id="ipification_msisdn">
+        <DataType>string</DataType>
+      </ClaimType>
 
       <ClaimType Id="ipification_device_hash">
         <DataType>string</DataType>
@@ -84,6 +87,18 @@
         </InputParameters>
         <OutputClaims>
           <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="ConvertStrongAuthPhoneToMsisdn" TransformationMethod="StringReplace">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="oldValue" DataType="string" Value="+" />
+          <InputParameter Id="newValue" DataType="string" Value="" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="ipification_msisdn" TransformationClaimType="outputClaim" />
         </OutputClaims>
       </ClaimsTransformation>
     </ClaimsTransformations>
@@ -214,9 +229,12 @@
             <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:IPificationOidcClientIdKeyContainer}" />
             <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:IPificationOidcClientSecretKeyContainer}" />
           </CryptographicKeys>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="ConvertStrongAuthPhoneToMsisdn" />
+          </InputClaimsTransformations>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="ipification_request_jwt_audience" PartnerClaimType="aud" DefaultValue="{Settings:IPificationRequestTokenAudience}" />
-            <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" PartnerClaimType="msisdn" />
+            <InputClaim ClaimTypeReferenceId="ipification_msisdn" PartnerClaimType="msisdn" />
           </InputClaims>
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="ipification_api_request_jwt" PartnerClaimType="token" />
