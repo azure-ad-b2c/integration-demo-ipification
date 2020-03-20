@@ -83,7 +83,6 @@ namespace B2C.IPificationDemo
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints => {
-                endpoints.MapHealthChecks("/healthcheck");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
