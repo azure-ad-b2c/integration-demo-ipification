@@ -79,11 +79,9 @@ namespace B2C.IPificationDemo
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseRouting();
             app.UseEndpoints(endpoints => {
                 endpoints.MapHealthChecks("/healthcheck");
                 endpoints.MapControllerRoute(
