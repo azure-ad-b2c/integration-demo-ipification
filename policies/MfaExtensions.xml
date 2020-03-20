@@ -234,7 +234,8 @@
           </InputClaimsTransformations>
           <InputClaims>
             <InputClaim ClaimTypeReferenceId="ipification_request_jwt_audience" PartnerClaimType="aud" DefaultValue="{Settings:IPificationRequestTokenAudience}" />
-            <InputClaim ClaimTypeReferenceId="ipification_msisdn" PartnerClaimType="msisdn" />
+            <InputClaim ClaimTypeReferenceId="ipification_api_client_id" PartnerClaimType="client_id" DefaultValue="{Settings:IPificationOidcClientId}" />
+            <InputClaim ClaimTypeReferenceId="ipification_msisdn" PartnerClaimType="login_hint" />
           </InputClaims>
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="ipification_api_request_jwt" PartnerClaimType="token" />
