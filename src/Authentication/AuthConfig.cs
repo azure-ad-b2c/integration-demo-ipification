@@ -17,6 +17,7 @@ namespace B2C.IPificationDemo.Authentication
         public static class ErrorCodes
         {
             public const string CancelledByUser = "AADB2C90091";
+            public const string ForgotPassword = "AADB2C90118";
         }
 
         public static class ClaimTypes {

@@ -50,13 +50,13 @@ namespace B2C.IPificationDemo
                     options.SaveTokens = true; // Save the ID token for the sign out request (it is added automatically)
                     options.Events = new OpenIdConnectEvents
                     {
-                        OnAuthenticationFailed = context =>
+                        OnAccessDenied = context => 
                         {
-                            if (context.ProtocolMessage.ErrorDescription?.Contains(AuthConfig.ErrorCodes.CancelledByUser) == true)
-                            {
-                                context.SkipHandler();
-                                context.Response.Redirect("/");
-                            }
+                            if(context.Request.ContainsOidcErrorDescriptionContent(AuthConfig.ErrorCodes.CancelledByUser) ||
+                                context.Request.ContainsOidcErrorDescriptionContent(AuthConfig.ErrorCodes.ForgotPassword)) {
+                                    context.Response.Redirect("/");
+                                    context.HandleResponse();
+                                }
                             return Task.CompletedTask;
                         }
                     };
