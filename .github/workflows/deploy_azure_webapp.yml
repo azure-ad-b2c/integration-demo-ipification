@@ -8,7 +8,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: b2c-ipification-demo
   AZURE_WEBAPP_SOURCE: './src'
-  DOTNET_VERSION: '3.1.0'
+  DOTNET_VERSION: '3.1.100'
   DEMO_APP_CLIENT_ID: 01622107-38b3-4a2c-9701-526641cdfdcf
 
 jobs:
