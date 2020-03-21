@@ -19,9 +19,13 @@ In the `policies/` folder you'll find custom policy definitions for two integrat
 
 The policies starting with `Phone` demonstrate how to leverage IPification as a silent phone-based passwordless authentication provider with fall back to SMS when IPification is not able to verify the user.
 
+This scenario is based on the [`phone-number-passwordless` starter pack](https://github.com/Azure-Samples/active-directory-b2c-custom-policy-starterpack/tree/master/scenarios/phone-number-passwordless).
+
 ### IPification as a second-factor authentication provider
 
 The policies starting with `Mfa` demonstrate how to leverage IPification as a multi-factor authentication option to verify a user's mobile number silently. This will fall back to SMS when IPification is not able to verify the user.
+
+This scenario is based on the [`SocialAndLocalAccountsWithMfa` starter pack](https://github.com/Azure-Samples/active-directory-b2c-custom-policy-starterpack/tree/master/SocialAndLocalAccountsWithMfa).
 
 ## Deployment
 
