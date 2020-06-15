@@ -7,8 +7,6 @@ This integration is powered by the Identity Experience Framework in Azure AD B2C
 ## Demo site
 In the `src/` folder is the source code for a simple website which uses OpenID Connect to authenticate using two Azure AD B2C policies which demonstrate different types of integration options with IPification.
 
-This website also hosts a single REST API endpoint which is consumed by the Azure AD B2C policies in order to generate certain parameters needed to enable the integration with IPficication.
-
 You can find the demo site at: https://b2c-ipification-demo.azurewebsites.net
 
 ## Identity Experience Framework Policies
