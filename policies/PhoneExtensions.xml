@@ -13,37 +13,15 @@
       <ClaimType Id="ipification_userip">
         <DataType>string</DataType>
       </ClaimType>
-
-      <ClaimType Id="ipification_api_client_id">
-        <DataType>string</DataType>
-      </ClaimType>
-      <ClaimType Id="ipification_api_grant_type">
-        <DataType>string</DataType>
-      </ClaimType>
-      <ClaimType Id="ipification_api_response_type">
-        <DataType>string</DataType>
-      </ClaimType>
-      <ClaimType Id="ipification_api_access_token">
-        <DataType>string</DataType>
-      </ClaimType>
-
       <ClaimType Id="ipification_api_coverage_available">
         <DataType>boolean</DataType>
       </ClaimType>
-      <ClaimType Id="ipification_request_jwt_audience">
-        <DataType>string</DataType>
-      </ClaimType>
-      <ClaimType Id="ipification_api_request_jwt">
-        <DataType>string</DataType>
-      </ClaimType>
-
       <ClaimType Id="ipification_device_hash">
         <DataType>string</DataType>
       </ClaimType>
       <ClaimType Id="ipification_phone_verified">
         <DataType>boolean</DataType>
       </ClaimType>
-
       <ClaimType Id="ipification_phone_country_part">
         <DataType>string</DataType>
       </ClaimType>
@@ -51,6 +29,9 @@
         <DataType>string</DataType>
       </ClaimType>
       <ClaimType Id="ipification_msisdn">
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="ipification_id_token_login_hint">
         <DataType>string</DataType>
       </ClaimType>
     </ClaimsSchema>
@@ -175,77 +156,24 @@
     <ClaimsProvider>
       <DisplayName>{Settings:IPificationDisplayName}</DisplayName>
       <TechnicalProfiles>
-        <!-- IPification client_credentials grant to get access_token for coverage API call  -->
-        <TechnicalProfile Id="IPification-ClientCredentials">
-          <DisplayName>Get IPification Availability</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-          <Metadata>
-            <Item Key="ServiceUrl">{Settings:IPificationTokenEndpoint}</Item>
-            <Item Key="AuthenticationType">Basic</Item>
-            <Item Key="SendClaimsIn">Form</Item>
-            <Item Key="DebugMode">{Settings:DeveloperMode}</Item>
-          </Metadata>
-          <CryptographicKeys>
-            <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:IPificationOidcClientIdKeyContainer}" />
-            <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:IPificationOidcClientSecretKeyContainer}" />
-          </CryptographicKeys>
-          <InputClaims>
-            <InputClaim ClaimTypeReferenceId="ipification_api_client_id" PartnerClaimType="client_id" DefaultValue="{Settings:IPificationOidcClientId}" />
-            <InputClaim ClaimTypeReferenceId="ipification_api_grant_type" PartnerClaimType="grant_type" DefaultValue="client_credentials" />
-            <InputClaim ClaimTypeReferenceId="ipification_api_response_type" PartnerClaimType="response_type" DefaultValue="token" />
-          </InputClaims>
-          <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="ipification_api_access_token" PartnerClaimType="access_token" />
-          </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
-        </TechnicalProfile>
         <!-- IPification coverage API call -->
         <TechnicalProfile Id="IPification-REST-GetCoverage">
           <DisplayName>Get IPification Availability</DisplayName>
           <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
           <Metadata>
-            <Item Key="ServiceUrl">{Settings:IPificationApiGetCoverageEndpoint}/{ipification_userip}</Item>
-            <Item Key="AuthenticationType">Bearer</Item>
-            <Item Key="UseClaimAsBearerToken">ipification_api_access_token</Item>
+            <Item Key="ServiceUrl">{Settings:IPificationApiGetCoverageEndpoint}/{ipification_userip}?client_id={Settings:IPificationOidcClientId}</Item>
+            <Item Key="AuthenticationType">None</Item>
             <Item Key="SendClaimsIn">Url</Item>
             <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+            <Item Key="AllowInsecureAuthInProduction">true</Item>
             <Item Key="DebugMode">{Settings:DeveloperMode}</Item>
           </Metadata>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="ipification_api_access_token" />
             <InputClaim ClaimTypeReferenceId="ipification_userip" DefaultValue="{Context:IPAddress}" />
           </InputClaims>
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="ipification_api_coverage_available" PartnerClaimType="available" />
             <OutputClaim ClaimTypeReferenceId="ipification_phone_verified" DefaultValue="false" AlwaysUseDefaultValue="true" />
-          </OutputClaims>
-          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
-        </TechnicalProfile>
-        <!-- Call to create a request parameter JWT which can be used during the IPification OIDC flow -->
-        <TechnicalProfile Id="IPification-REST-GetRequestJwt">
-          <DisplayName>Get IPification OIDC Request JWT</DisplayName>
-          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-          <Metadata>
-            <Item Key="ServiceUrl">{Settings:IPificationApiGetRequestJwtEndpoint}</Item>
-            <Item Key="AuthenticationType">Basic</Item>
-            <Item Key="SendClaimsIn">Body</Item>
-            <Item Key="DebugMode">{Settings:DeveloperMode}</Item>
-          </Metadata>
-          <CryptographicKeys>
-            <Key Id="BasicAuthenticationUsername" StorageReferenceId="{Settings:IPificationOidcClientIdKeyContainer}" />
-            <Key Id="BasicAuthenticationPassword" StorageReferenceId="{Settings:IPificationOidcClientSecretKeyContainer}" />
-          </CryptographicKeys>
-          <InputClaimsTransformations>
-            <InputClaimsTransformation ReferenceId="GetIPificationMsisdn" />
-            <InputClaimsTransformation ReferenceId="RemovePlusFromIPificationMsisdn" />
-          </InputClaimsTransformations>
-          <InputClaims>
-            <InputClaim ClaimTypeReferenceId="ipification_request_jwt_audience" PartnerClaimType="aud" DefaultValue="{Settings:IPificationRequestTokenAudience}" />
-            <InputClaim ClaimTypeReferenceId="ipification_api_client_id" PartnerClaimType="client_id" DefaultValue="{Settings:IPificationOidcClientId}" />
-            <InputClaim ClaimTypeReferenceId="ipification_msisdn" PartnerClaimType="login_hint" />
-          </InputClaims>
-          <OutputClaims>
-            <OutputClaim ClaimTypeReferenceId="ipification_api_request_jwt" PartnerClaimType="token" />
           </OutputClaims>
           <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
         </TechnicalProfile>
@@ -266,11 +194,16 @@
           <CryptographicKeys>
             <Key Id="client_secret" StorageReferenceId="{Settings:IPificationOidcClientSecretKeyContainer}"/>
           </CryptographicKeys>
+          <InputClaimsTransformations>
+            <InputClaimsTransformation ReferenceId="GetIPificationMsisdn" />
+            <InputClaimsTransformation ReferenceId="RemovePlusFromIPificationMsisdn" />
+          </InputClaimsTransformations>
           <InputClaims>
-            <InputClaim ClaimTypeReferenceId="ipification_api_request_jwt" PartnerClaimType="request"/>
+            <InputClaim ClaimTypeReferenceId="ipification_msisdn" PartnerClaimType="login_hint"/>
           </InputClaims>
           <OutputClaims>
             <OutputClaim ClaimTypeReferenceId="ipification_device_hash" PartnerClaimType="sub"/>
+            <OutputClaim ClaimTypeReferenceId="ipification_id_token_login_hint" PartnerClaimType="login_hint"/>
             <OutputClaim ClaimTypeReferenceId="ipification_phone_verified" PartnerClaimType="phone_number_verified"/>
           </OutputClaims>
         </TechnicalProfile>
@@ -285,18 +218,12 @@
         <!-- Before anything else, check for IPification coverage -->
         <OrchestrationStep Order="1" Type="ClaimsExchange">
           <ClaimsExchanges>
-            <ClaimsExchange Id="GetIPificationAccessToken" TechnicalProfileReferenceId="IPification-ClientCredentials" />
-          </ClaimsExchanges>
-        </OrchestrationStep>
-        <OrchestrationStep Order="2" Type="ClaimsExchange">
-          <ClaimsExchanges>
             <ClaimsExchange Id="CheckIPificationCoverage" TechnicalProfileReferenceId="IPification-REST-GetCoverage" />
           </ClaimsExchanges>
         </OrchestrationStep>
 
-
         <!-- IF IPification coverage, show unified SUSI with IPification sign up flow -->
-        <OrchestrationStep Order="3" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="signuporsignin-phone">
+        <OrchestrationStep Order="2" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="signuporsignin-phone">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -312,7 +239,7 @@
             <ClaimsExchange Id="IPification-LocalAccountSigninPhoneExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Phone-Only" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="4" Type="ClaimsExchange">
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -331,7 +258,7 @@
 
 
         <!-- IF NO IPification coverage, show unified SUSI with base policy TPs -->
-        <OrchestrationStep Order="5" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="signuporsignin-phone">
+        <OrchestrationStep Order="4" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="signuporsignin-phone">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -347,7 +274,7 @@
             <ClaimsExchange Id="LocalAccountSigninPhoneExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Phone-Only" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="6" Type="ClaimsExchange">
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -366,7 +293,7 @@
 
 
         <!-- For sign IN, if IPification coverage available, collect phone without sending Azure SMS -->
-        <OrchestrationStep Order="7" Type="ClaimsExchange">
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -385,19 +312,7 @@
 
 
         <!-- For sign UP or IN, if IPification coverage available, perform the IPification flow -->
-        <OrchestrationStep Order="8" Type="ClaimsExchange">
-          <Preconditions>
-            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
-              <Value>ipification_api_coverage_available</Value>
-              <Value>False</Value>
-              <Action>SkipThisOrchestrationStep</Action>
-            </Precondition>
-          </Preconditions>
-          <ClaimsExchanges>
-            <ClaimsExchange Id="IPification-GetRequestJwt" TechnicalProfileReferenceId="IPification-REST-GetRequestJwt" />
-          </ClaimsExchanges>
-        </OrchestrationStep>
-        <OrchestrationStep Order="9" Type="ClaimsExchange">
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -410,7 +325,7 @@
           </ClaimsExchanges>
         </OrchestrationStep>
         <!-- For sign UP or IN, IF IPification ran but could not verify, send Azure SMS and verify -->
-        <OrchestrationStep Order="10" Type="ClaimsExchange">
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -427,7 +342,7 @@
             <ClaimsExchange Id="IPification-AzureMfa-SendSms" TechnicalProfileReferenceId="AzureMfa-SendSms" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="11" Type="ClaimsExchange">
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -446,7 +361,7 @@
         </OrchestrationStep>
 
         <!-- For sign IN, if NO IPification coverage available, collect the phone and send Azure SMS-->
-        <OrchestrationStep Order="12" Type="ClaimsExchange">
+        <OrchestrationStep Order="10" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -462,7 +377,7 @@
             <ClaimsExchange Id="PhoneVerificationExchangePart1" TechnicalProfileReferenceId="PhoneVerificationPage1" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="13" Type="ClaimsExchange">
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -480,7 +395,7 @@
         </OrchestrationStep>
 
         <!-- For sign UP, always collect email as backup -->
-        <OrchestrationStep Order="14" Type="ClaimsExchange">
+        <OrchestrationStep Order="12" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>isLocalAccountSignIn</Value>
@@ -492,7 +407,7 @@
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <OrchestrationStep Order="15" Type="ClaimsExchange">
+        <OrchestrationStep Order="13" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>hasFullProfile</Value>
@@ -503,7 +418,7 @@
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="16" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <OrchestrationStep Order="14" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>

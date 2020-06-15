@@ -41,12 +41,9 @@ jobs:
         IPificationDescription: "Environments[0].PolicySettings.IPificationDescription"
         IPificationOidcMetadataUrl: "Environments[0].PolicySettings.IPificationOidcMetadataUrl"
         IPificationOidcClientId: "Environments[0].PolicySettings.IPificationOidcClientId"
-        IPificationOidcClientIdKeyContainer: "Environments[0].PolicySettings.IPificationOidcClientIdKeyContainer"
         IPificationOidcClientSecretKeyContainer: "Environments[0].PolicySettings.IPificationOidcClientSecretKeyContainer"
         IPificationTokenEndpoint: "Environments[0].PolicySettings.IPificationTokenEndpoint"
-        IPificationRequestTokenAudience: "Environments[0].PolicySettings.IPificationRequestTokenAudience"
         IPificationApiGetCoverageEndpoint: "Environments[0].PolicySettings.IPificationApiGetCoverageEndpoint"
-        IPificationApiGetRequestJwtEndpoint: "Environments[0].PolicySettings.IPificationApiGetRequestJwtEndpoint"
 
     - name: Replace tokens in B2C policies
       uses: cschleiden/replace-tokens@v1.0
@@ -69,26 +66,15 @@ jobs:
         IPificationDescription: ${{ steps.parse_appsettings.outputs.IPificationDescription }}
         IPificationOidcMetadataUrl: ${{ steps.parse_appsettings.outputs.IPificationOidcMetadataUrl }}
         IPificationOidcClientId: ${{ steps.parse_appsettings.outputs.IPificationOidcClientId }}
-        IPificationOidcClientIdKeyContainer: ${{ steps.parse_appsettings.outputs.IPificationOidcClientIdKeyContainer }}
         IPificationOidcClientSecretKeyContainer: ${{ steps.parse_appsettings.outputs.IPificationOidcClientSecretKeyContainer }}
         IPificationTokenEndpoint: ${{ steps.parse_appsettings.outputs.IPificationTokenEndpoint }}
-        IPificationRequestTokenAudience: ${{ steps.parse_appsettings.outputs.IPificationRequestTokenAudience }}
         IPificationApiGetCoverageEndpoint: ${{ steps.parse_appsettings.outputs.IPificationApiGetCoverageEndpoint }}
-        IPificationApiGetRequestJwtEndpoint: ${{ steps.parse_appsettings.outputs.IPificationApiGetRequestJwtEndpoint }}
         
     - name: Upload Facebook Client Secret
       uses: azure-ad-b2c/deploy-trustframework-keyset-secret@v1
       with:
         name: ${{ steps.parse_appsettings.outputs.FacebookClientSecretKeyContainer }}
         value: ${{ secrets.FACEBOOK_CLIENT_SECRET }}
-        tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
-        clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
-        clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
-    - name: Upload IPification Client ID as secret
-      uses: azure-ad-b2c/deploy-trustframework-keyset-secret@v1
-      with:
-        name: ${{ steps.parse_appsettings.outputs.IPificationOidcClientIdKeyContainer }}
-        value: ${{ secrets.IPIFICATION_OIDC_CLIENT_ID }}
         tenant: ${{ steps.parse_appsettings.outputs.Tenant }}
         clientId: ${{ env.B2C_SERVICE_PRINCIPAL_CLIENT_ID }}
         clientSecret: ${{ secrets.B2C_SERVICE_PRINCIPAL_CLIENT_SECRET }}
