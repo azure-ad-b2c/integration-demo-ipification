@@ -5,7 +5,7 @@ The repository contains code which demonstrates an integration between [Azure AD
 This integration is powered by the Identity Experience Framework in Azure AD B2C. For more information on TrustFramework Policies and the Identity Experience Framework, see the [Azure AD B2C documentation](https://docs.microsoft.com/en-us/azure/active-directory-b2c/custom-policy-overview).
 
 [IPification](https://www.ipification.com/) is a highly secure, credential-less, network-based authentication solution for frictionless user experience on mobile and IoT devices.
-For complete integration instructions to IPification solution please contact [IPification Team](https://www.ipification.com/contact-us). We will provide you neccessary account details and give you support in all integration phases.
+For complete integration instructions to IPification solution please contact [IPification Team](https://www.ipification.com/contact-us). IPification will provide you with the necessary account details and provide support through the integration process.
 
 ## Demo site
 In the `src/` folder is the source code for a simple website which uses OpenID Connect to authenticate using two Azure AD B2C policies which demonstrate different types of integration options with IPification.
