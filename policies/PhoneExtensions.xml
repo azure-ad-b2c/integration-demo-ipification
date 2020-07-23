@@ -34,6 +34,15 @@
       <ClaimType Id="ipification_id_token_login_hint">
         <DataType>string</DataType>
       </ClaimType>
+      <ClaimType Id="stringWhiteListNumber">
+        <DisplayName>stringWhiteListNumber</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="whiteListNumber">
+        <DisplayName>whiteListNumber</DisplayName>
+        <DataType>stringCollection</DataType>
+      </ClaimType>
     </ClaimsSchema>
 
     <ClaimsTransformations>
@@ -57,6 +66,41 @@
           <OutputClaim ClaimTypeReferenceId="ipification_msisdn" TransformationClaimType="outputClaim" />
         </OutputClaims>
       </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CreateStringWhiteListNumber" TransformationMethod="CreateStringClaim">
+        <InputParameters>
+          <InputParameter Id="value" DataType="string" Value="{Settings:IPificationWhiteListNumber}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="stringWhiteListNumber" TransformationClaimType="createdClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="ConvertWhiteListNumberToStringCollection" TransformationMethod="StringSplit">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="stringWhiteListNumber" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+        <InputParameter DataType="string" Id="delimiter" Value="," />
+          </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="whiteListNumber" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <ClaimsTransformation Id="CheckCoverageWhiteListNumber" TransformationMethod="StringCollectionContainsClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="whiteListNumber" TransformationClaimType="collection" />
+          <InputClaim ClaimTypeReferenceId="phoneNumber" TransformationClaimType="item" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="ipification_api_coverage_available" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation> 
+
     </ClaimsTransformations>
   </BuildingBlocks>
 
@@ -207,6 +251,23 @@
             <OutputClaim ClaimTypeReferenceId="ipification_phone_verified" PartnerClaimType="phone_number_verified"/>
           </OutputClaims>
         </TechnicalProfile>
+
+        <!-- IPification-CheckPhoneInWhiteList -->
+
+        <TechnicalProfile Id="IPification-CheckPhoneInWhiteList">
+          <DisplayName>Pass coverage if phone include in whitelist</DisplayName>
+          <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+          <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="ipification_api_coverage_available" />
+          </OutputClaims>
+          <OutputClaimsTransformations>
+            <OutputClaimsTransformation ReferenceId="CreateStringWhiteListNumber" />
+            <OutputClaimsTransformation ReferenceId="ConvertWhiteListNumberToStringCollection" />
+            <OutputClaimsTransformation ReferenceId="CheckCoverageWhiteListNumber" />
+          </OutputClaimsTransformations>
+          <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+        </TechnicalProfile>
+
       </TechnicalProfiles>
     </ClaimsProvider>
   </ClaimsProviders>
@@ -274,7 +335,23 @@
             <ClaimsExchange Id="LocalAccountSigninPhoneExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Phone-Only" />
           </ClaimsExchanges>
         </OrchestrationStep>
+
+        <!-- check whitelist phone pass coverage -->
         <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>ipification_api_coverage_available</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="IPification-CheckPhoneInWhiteList" TechnicalProfileReferenceId="IPification-CheckPhoneInWhiteList" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+
+        
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -293,7 +370,7 @@
 
 
         <!-- For sign IN, if IPification coverage available, collect phone without sending Azure SMS -->
-        <OrchestrationStep Order="6" Type="ClaimsExchange">
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -310,9 +387,8 @@
           </ClaimsExchanges>
         </OrchestrationStep>
 
-
         <!-- For sign UP or IN, if IPification coverage available, perform the IPification flow -->
-        <OrchestrationStep Order="7" Type="ClaimsExchange">
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -325,7 +401,7 @@
           </ClaimsExchanges>
         </OrchestrationStep>
         <!-- For sign UP or IN, IF IPification ran but could not verify, send Azure SMS and verify -->
-        <OrchestrationStep Order="8" Type="ClaimsExchange">
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -342,7 +418,8 @@
             <ClaimsExchange Id="IPification-AzureMfa-SendSms" TechnicalProfileReferenceId="AzureMfa-SendSms" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="9" Type="ClaimsExchange">
+
+        <OrchestrationStep Order="10" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -361,7 +438,7 @@
         </OrchestrationStep>
 
         <!-- For sign IN, if NO IPification coverage available, collect the phone and send Azure SMS-->
-        <OrchestrationStep Order="10" Type="ClaimsExchange">
+        <OrchestrationStep Order="11" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -377,7 +454,7 @@
             <ClaimsExchange Id="PhoneVerificationExchangePart1" TechnicalProfileReferenceId="PhoneVerificationPage1" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="11" Type="ClaimsExchange">
+        <OrchestrationStep Order="12" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
               <Value>ipification_api_coverage_available</Value>
@@ -395,7 +472,7 @@
         </OrchestrationStep>
 
         <!-- For sign UP, always collect email as backup -->
-        <OrchestrationStep Order="12" Type="ClaimsExchange">
+        <OrchestrationStep Order="13" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>isLocalAccountSignIn</Value>
@@ -407,7 +484,7 @@
           </ClaimsExchanges>
         </OrchestrationStep>
 
-        <OrchestrationStep Order="13" Type="ClaimsExchange">
+        <OrchestrationStep Order="14" Type="ClaimsExchange">
           <Preconditions>
             <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
               <Value>hasFullProfile</Value>
@@ -418,7 +495,7 @@
             <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
           </ClaimsExchanges>
         </OrchestrationStep>
-        <OrchestrationStep Order="14" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+        <OrchestrationStep Order="15" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
       </OrchestrationSteps>
       <ClientDefinition ReferenceId="DefaultWeb" />
     </UserJourney>
